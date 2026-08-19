@@ -1,0 +1,174 @@
+# api/whatsapp.py
+
+import logging
+import re
+from fastapi import APIRouter, Query, Request, Response, BackgroundTasks, HTTPException, Depends, Header
+from typing import Annotated
+
+from core.config import get_settings
+from api.dependencies import get_api_key
+from models.whatsapp import WebhookPayload, OutboundMessagePayload
+from utils.normalization import normalize_whatsapp_message
+from utils.logging import log_message_data
+from services.memory_store import memory_store
+from services.openai_service import generate_reply, get_or_create_user
+from services.whatsapp_service import send_whatsapp_message
+
+# Initialize router and logger
+router = APIRouter()
+logger = logging.getLogger(__name__)
+settings = get_settings()
+
+# --- Security Dependency ---
+async def verify_api_key(x_api_key: Annotated[str, Header()]):
+    """
+    Dependency to verify the internal API key.
+    """
+    if x_api_key != settings.INTERNAL_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+
+# --- HELPER FUNCTION ---
+async def format_and_send_model_list(user_id: str):
+    """
+    Fetches, formats, and sends the list of available models to the user.
+    """
+    models = await list_available_models()
+    if models:
+        # Sort models, maybe putting 'gpt-4o' variants at the top for prominence
+        models.sort(key=lambda x: ('gpt-4o' not in x, 'mini' in x, x))
+        formatted_list = "\n- ".join(models)
+        reply_text = (
+            "To select one, send a message like this:\n"
+            '`/Use model: "gpt-4o-mini"`\n\n'
+            "You can choose from these available models:\n\n"
+            f"- {formatted_list}\n\n"
+            "To select one, send a message like this:\n"
+            '`/Use model: "gpt-4o-mini"`\n\n'
+        )
+        await send_whatsapp_message(to=user_id, text=reply_text)
+
+# --- Get Available Models ---
+@router.get(
+    "/models", 
+    response_model=list[str],
+    dependencies=[Depends(verify_api_key)]
+)
+async def get_available_models():
+    """
+    Returns a list of available OpenAI chat models.
+    This endpoint is secured by the internal API key.
+    """
+    return await list_available_models()
+
+# --- Webhook Verification Endpoint ---
+@router.get("/webhook")
+async def verify_webhook(
+    mode: str = Query(..., alias="hub.mode"),
+    token: str = Query(..., alias="hub.verify_token"),
+    challenge: str = Query(..., alias="hub.challenge"),
+):
+    """
+    Handles the webhook verification request from Meta.
+    It checks the verify token and responds with the challenge.
+    """
+    if mode == "subscribe" and token == settings.VERIFY_TOKEN:
+        logger.info("Webhook verified successfully.")
+        return Response(content=challenge, media_type="text/plain")
+
+    logger.warning(f"Webhook verification failed. Mode: {mode}, Token: {token}")
+    raise HTTPException(status_code=403, detail="Webhook verification failed.")
+
+
+# --- Task for Background Processing ---
+async def process_and_reply(normalized_data: dict):
+    """
+    Processes an incoming WhatsApp message:
+    1. Checks if AI is paused (Human Takeover Active).
+    2. If AI active, passes to the multilingual agent and sends automated reply.
+    """
+    user_id = normalized_data["user_id"]
+    user_name = normalized_data.get("user_name", "Client")
+    user_text = normalized_data["text"].strip()
+
+    # 1. Fetch user to check if human takeover is enabled
+    user = await get_or_create_user(user_id, user_name)
+
+    if user.is_ai_paused:
+        # AI is paused for this specific chat! Human will reply via Dashboard.
+        logger.info(f"AI is PAUSED for user {user_id} (Human Takeover Active). Message saved to DB.")
+        from services.openai_service import save_chat_message
+        await save_chat_message(user_id, "user", user_text)
+        log_message_data(normalized_data, "[Human Takeover Active - AI Paused]")
+        return
+
+    # 2. AI generates intelligent consultative reply
+    final_reply_text = await generate_reply(
+        user_id=user_id,
+        user_text=user_text,
+        contact_name=user_name,
+        send_message_callback=send_whatsapp_message
+    )
+
+    # 3. Send outbound reply to WhatsApp
+    if final_reply_text:
+        await send_whatsapp_message(to=user_id, text=final_reply_text)
+
+    log_message_data(normalized_data, final_reply_text or "[No final reply text]")
+
+# --- Incoming Messages Endpoint ---
+@router.post("/webhook")
+async def receive_message(request: Request, background_tasks: BackgroundTasks):
+    """
+    Handles incoming messages and events from WhatsApp.
+    It validates the payload, filters for user text messages, and
+    schedules the processing to be done in the background.
+    """
+    try:
+        payload_dict = await request.json()
+        logger.info(f"Received webhook payload: {payload_dict}")
+
+        # Use Pydantic to parse and validate the payload
+        payload = WebhookPayload.parse_obj(payload_dict)
+
+        for entry in payload.entry:
+            for change in entry.changes:
+                value = change.value
+
+                # Filter out status updates and keep only actual user messages
+                if value.messages:
+                    normalized_data = normalize_whatsapp_message(value)
+                    if normalized_data:
+                        # Add the processing to background tasks
+                        # This allows us to return a 200 OK to Meta immediately
+                        background_tasks.add_task(process_and_reply, normalized_data)
+
+    except Exception as e:
+        logger.error(f"Error processing webhook: {e}", exc_info=True)
+        # Still return 200 to prevent Meta from resending the webhook
+        # but log the error for debugging.
+
+    return Response(status_code=200)
+
+# --- NEW ENDPOINT FOR N8N ---
+
+@router.post(
+    "/send",
+    summary="Send an outbound message",
+    description="Endpoint for internal services like n8n to send a WhatsApp message.",
+    dependencies=[Depends(get_api_key)] # This applies the security check!
+)
+async def send_from_internal(payload: OutboundMessagePayload):
+    """
+    Receives a recipient 'to' and 'text' and sends a WhatsApp message.
+    This endpoint is protected by an API key.
+    """
+    logger.info(f"Received request to send message to {payload.to} from internal service.")
+    try:
+        await send_whatsapp_message(to=payload.to, text=payload.text)
+        return {"status": "success", "message": f"Message queued to be sent to {payload.to}."}
+    except Exception as e:
+        logger.error(f"Failed to send message from internal endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred while trying to send the message: {e}"
+        )
