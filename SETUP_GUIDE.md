@@ -126,9 +126,9 @@ Once your server is running publicly (e.g. via Cloudflare tunnel or cloud domain
 
 **PowerShell:**
 ```powershell
-$botToken = "8627383238:AAEdHt0_g3f5m9dSinxSpS5itF9qODx3GKg"
+$botToken = "<YOUR_TELEGRAM_BOT_TOKEN>"
 $webhookUrl = "https://whatsapp-agent.yourdomain.com/telegram/webhook"
-$secret = "prestige_prime_tg_secret_2026"
+$secret = "<YOUR_TELEGRAM_WEBHOOK_SECRET>"
 
 Invoke-RestMethod -Uri "https://api.telegram.org/bot$botToken/setWebhook" `
   -Method Post `
@@ -138,9 +138,9 @@ Invoke-RestMethod -Uri "https://api.telegram.org/bot$botToken/setWebhook" `
 
 **cURL:**
 ```bash
-curl -X POST "https://api.telegram.org/bot8627383238:AAEdHt0_g3f5m9dSinxSpS5itF9qODx3GKg/setWebhook" \
+curl -X POST "https://api.telegram.org/bot<YOUR_TELEGRAM_BOT_TOKEN>/setWebhook" \
      -H "Content-Type: application/json" \
-     -d '{"url": "https://whatsapp-agent.yourdomain.com/telegram/webhook", "secret_token": "prestige_prime_tg_secret_2026"}'
+     -d '{"url": "https://whatsapp-agent.yourdomain.com/telegram/webhook", "secret_token": "<YOUR_TELEGRAM_WEBHOOK_SECRET>"}'
 ```
 
 ---
