@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prestige Prime Logistics - Live Control Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-app: #0c1317;
+      --bg-header: #111b21;
+      --bg-sidebar: #111b21;
+      --bg-chat: #0b141a;
+      --bg-surface: #202c33;
+      --border: #222e35;
+      
+      --text-main: #e9edef;
+      --text-secondary: #8696a0;
+      
+      --green-primary: #00a884;
+      --green-hover: #008f6f;
+      --green-light: #25d366;
+      
+      --bubble-in: #202c33;
+      --bubble-out: #005c4b;
+      --bubble-human: #263843;
+      
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --font: 'Inter', -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg-app); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--bg-header);
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 56px;
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 32px; height: 32px;
+      background: var(--green-primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+    }
+    .brand-icon i { width: 18px; height: 18px; }
+    .brand h1 { font-size: 15px; font-weight: 700; color: var(--text-main); }
+    .brand span { font-size: 11px; color: var(--text-secondary); margin-left: 6px; }
+
+    .stats-bar { display: flex; gap: 10px; align-items: center; }
+    .stat-pill {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+    .stat-pill b { color: var(--text-main); }
+    .stat-pill.hot b { color: #f87171; }
+    .stat-pill.takeover b { color: var(--warning); }
+    .stat-pill i { width: 13px; height: 13px; }
+
+    /* Main Container */
+    .main-layout { display: flex; flex: 1; height: calc(100vh - 56px); overflow: hidden; }
+
+    /* 1. Left Sidebar: Chat List */
+    .sidebar { width: 320px; min-width: 300px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    
+    .search-wrapper { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .search-box {
+      background: var(--bg-surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+    }
+    .search-box i { width: 14px; height: 14px; color: var(--text-secondary); }
+    .search-input { width: 100%; background: transparent; border: none; outline: none; color: var(--text-main); font-size: 13px; }
+
+    .chat-list { flex: 1; overflow-y: auto; }
+    .chat-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      cursor: pointer;
+      display: flex;
+      gap: 10px;
+      transition: background 0.1s ease;
+    }
+    .chat-item:hover { background: #182229; }
+    .chat-item.active { background: #2a3942; }
+
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: #2a3942;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px;
+      color: var(--green-light);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .avatar.has-takeover::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 10px; height: 10px;
+      background: var(--warning);
+      border-radius: 50%;
+      border: 2px solid var(--bg-sidebar);
+    }
+
+    .chat-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .chat-row-top { display: flex; justify-content: space-between; align-items: baseline; }
+    .chat-name { font-weight: 600; font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-time { font-size: 11px; color: var(--text-secondary); }
+    
+    .chat-preview {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .chat-badges { display: flex; gap: 4px; margin-top: 2px; }
+    .badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px; }
+    .badge i { width: 10px; height: 10px; }
+    .badge-ai { background: rgba(0,168,132,0.15); color: var(--green-light); }
+    .badge-telegram { background: rgba(36,161,222,0.2); color: #38bdf8; }
+    .badge-whatsapp { background: rgba(37,211,102,0.2); color: #4ade80; }
+    .badge-takeover { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .badge-hot { background: rgba(239,68,68,0.2); color: #f87171; }
+
+    /* 2. Center: Chat Area */
+    .chat-center { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); position: relative; }
+    
+    .chat-header {
+      background: var(--bg-header);
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 56px;
+    }
+    .chat-user-meta { display: flex; align-items: center; gap: 10px; }
+    .chat-user-meta h2 { font-size: 14px; font-weight: 700; }
+    .chat-user-meta p { font-size: 11px; color: var(--text-secondary); }
+
+    .btn-takeover {
+      background: var(--warning);
+      color: #111;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .btn-takeover:hover { opacity: 0.9; }
+    .btn-takeover.btn-resume { background: var(--green-primary); color: #fff; }
+    .btn-takeover i { width: 14px; height: 14px; }
+
+    .messages-viewport {
+      flex: 1;
+      padding: 20px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-image: radial-gradient(rgba(255,255,255,0.02) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    .msg-bubble-wrap { display: flex; width: 100%; }
+    .msg-bubble-wrap.out { justify-content: flex-end; }
+    .msg-bubble-wrap.in { justify-content: flex-start; }
+
+    .msg-bubble {
+      max-width: 60%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.45;
+      position: relative;
+      word-break: break-word;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+    .msg-bubble.user { background: var(--bubble-in); color: var(--text-main); border-top-left-radius: 0; }
+    .msg-bubble.ai { background: var(--bubble-out); color: #fff; border-top-right-radius: 0; }
+    .msg-bubble.human_agent { background: var(--bubble-human); color: #fff; border: 1px solid rgba(245,158,11,0.4); border-top-right-radius: 0; }
+
+    .msg-sender-title {
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      color: var(--green-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: uppercase;
+    }
+    .msg-bubble.human_agent .msg-sender-title { color: #fbbf24; }
+    .msg-sender-title i { width: 11px; height: 11px; }
+
+    .msg-time { display: flex; justify-content: flex-end; font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+
+    .chat-footer {
+      background: var(--bg-header);
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .msg-textarea {
+      flex: 1;
+      background: var(--bg-surface);
+      border: 1px solid transparent;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-family: var(--font);
+      outline: none;
+      resize: none;
+      height: 40px;
+      line-height: 20px;
+    }
+    .msg-textarea:focus { border-color: var(--green-primary); }
+    
+    .btn-send {
+      background: var(--green-primary);
+      color: white;
+      border: none;
+      padding: 0 16px;
+      height: 40px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-send:hover { background: var(--green-hover); }
+    .btn-send i { width: 14px; height: 14px; }
+
+    /* 3. Right: Lead Panel */
+    .lead-panel {
+      width: 320px;
+      min-width: 300px;
+      background: var(--bg-sidebar);
+      border-left: 1px solid var(--border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-light);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-title i { width: 13px; height: 13px; }
+    .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; font-size: 12px; margin-bottom: 8px; }
+    .card-label { color: var(--text-secondary); flex-shrink: 0; }
+    .card-value { font-weight: 600; text-align: right; word-break: break-word; white-space: normal; line-height: 1.35; }
+
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); gap: 10px; }
+    .empty-state i { width: 40px; height: 40px; stroke-width: 1.5; }
+    .empty-state h3 { font-size: 14px; color: var(--text-main); }
+    .empty-state p { font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <i data-lucide="message-square"></i>
+      </div>
+      <h1>Prestige Prime</h1>
+      <span>Live Control Hub (WhatsApp & Telegram)</span>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill"><i data-lucide="users"></i> Contacts: <b id="stat-users">0</b></div>
+      <div class="stat-pill hot"><i data-lucide="flame"></i> Hot Leads: <b id="stat-hot">0</b></div>
+      <div class="stat-pill"><i data-lucide="calendar"></i> Bookings: <b id="stat-bookings">0</b></div>
+      <div class="stat-pill takeover"><i data-lucide="user-check"></i> Takeovers: <b id="stat-takeovers">0</b></div>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Layout -->
+  <div class="main-layout">
+
+    <!-- 1. Left Sidebar -->
+    <div class="sidebar">
+      <div class="search-wrapper">
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="search-input" class="search-input" placeholder="Search contact or phone..." oninput="filterChats()">
+        </div>
+      </div>
+      <div class="chat-list" id="chat-list"></div>
+    </div>
+
+    <!-- 2. Center Chat Area -->
+    <div class="chat-center">
+      <div class="empty-state" id="empty-state">
+        <i data-lucide="message-square"></i>
+        <h3>Select a conversation</h3>
+        <p>Monitor live AI answers or take over chat directly.</p>
+      </div>
+
+      <div id="active-chat-content" style="display: none; flex-direction: column; height: 100%;">
+        <!-- Active Chat Header -->
+        <div class="chat-header">
+          <div class="chat-user-meta">
+            <div class="avatar" id="active-avatar">S</div>
+            <div>
+              <h2 id="active-name">Client</h2>
+              <p id="active-phone">+234...</p>
+            </div>
+          </div>
+          <button id="btn-toggle-takeover" class="btn-takeover" onclick="toggleTakeover()">
+            <i data-lucide="user"></i> <span id="takeover-btn-text">Take Over Chat</span>
+          </button>
+        </div>
+
+        <!-- Messages Viewport -->
+        <div class="messages-viewport" id="messages-container"></div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-footer">
+          <textarea id="msg-input" class="msg-textarea" placeholder="Type a message to send directly to WhatsApp..." onkeydown="handleKeyPress(event)"></textarea>
+          <button class="btn-send" onclick="sendManualMessage()">
+            <span>Send</span>
+            <i data-lucide="send"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Right Lead Dossier Panel -->
+    <div class="lead-panel" id="lead-panel" style="display: none;">
+      <div class="card">
+        <div class="card-title"><i data-lucide="user"></i> Client Profile</div>
+        <div class="card-row"><span class="card-label">Name</span><span class="card-value" id="drawer-name">-</span></div>
+        <div class="card-row"><span class="card-label">Phone</span><span class="card-value" id="drawer-phone">-</span></div>
+        <div class="card-row"><span class="card-label">Language</span><span class="card-value" id="drawer-lang">-</span></div>
+        <div class="card-row"><span class="card-label">Status</span><span class="card-value" id="drawer-status">-</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i data-lucide="target"></i> Lead Intelligence</div>
+        <div class="card-row"><span class="card-label">Score</span><span class="card-value" id="drawer-score">-</span></div>
+        <div class="card-row"><span class="card-label">Service</span><span class="card-value" id="drawer-service">-</span></div>
+        <div class="card-row"><span class="card-label">Budget</span><span class="card-value" id="drawer-budget">-</span></div>
+        <div class="card-row"><span class="card-label">Email</span><span class="card-value" id="drawer-email">-</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i data-lucide="calendar-check"></i> Consultation Booking</div>
+        <div class="card-row"><span class="card-label">Service</span><span class="card-value" id="drawer-book-service">-</span></div>
+        <div class="card-row"><span class="card-label">Schedule</span><span class="card-value" id="drawer-book-time">-</span></div>
+        <div class="card-row"><span class="card-label">Status</span><span class="card-value" id="drawer-book-status">-</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let allChats = [];
+    let currentPhone = null;
+    let isAiPausedCurrent = false;
+
+    // Strip raw markdown from previews and texts
+    function cleanWhatsAppText(text) {
+      if (!text) return '';
+      return text
+        .replace(/###\s?/g, '')
+        .replace(/##\s?/g, '')
+        .replace(/#\s?/g, '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .trim();
+    }
+
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const data = await res.json();
+        document.getElementById('stat-users').innerText = data.total_users;
+        document.getElementById('stat-hot').innerText = data.hot_leads;
+        document.getElementById('stat-bookings').innerText = data.total_bookings;
+        document.getElementById('stat-takeovers').innerText = data.active_takeovers;
+        lucide.createIcons();
+      } catch (e) {
+        console.error("Error fetching stats:", e);
+      }
+    }
+
+    async function loadChats() {
+      try {
+        const res = await fetch('/api/admin/chats');
+        allChats = await res.json();
+        renderChatList(allChats);
+        fetchStats();
+      } catch (e) {
+        console.error("Error loading chats:", e);
+      }
+    }
+
+    function renderChatList(chats) {
+      const container = document.getElementById('chat-list');
+      container.innerHTML = '';
+
+      if (chats.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 12px;">No active chats recorded.</div>';
+        return;
+      }
+
+      chats.forEach(chat => {
+        const item = document.createElement('div');
+        item.className = `chat-item ${currentPhone === chat.phone_number ? 'active' : ''}`;
+        item.onclick = () => selectChat(chat.phone_number);
+
+        const isTelegram = chat.phone_number.startsWith('tg_');
+        const channelBadge = isTelegram 
+          ? `<span class="badge badge-telegram"><i data-lucide="send"></i> Telegram</span>`
+          : `<span class="badge badge-whatsapp"><i data-lucide="message-circle"></i> WhatsApp</span>`;
+
+        const displayName = chat.whatsapp_name || (isTelegram ? `TG User (${chat.phone_number.replace('tg_','')})` : chat.phone_number);
+        const initials = (displayName || "CL").slice(0, 2).toUpperCase();
+        const timeStr = new Date(chat.last_activity).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const isTakeover = chat.is_ai_paused;
+        const tagAi = isTakeover 
+          ? `<span class="badge badge-takeover"><i data-lucide="user-check"></i> Takeover</span>` 
+          : `<span class="badge badge-ai"><i data-lucide="bot"></i> AI Active</span>`;
+
+        const tagHot = chat.intent_score === 'HOT' 
+          ? `<span class="badge badge-hot"><i data-lucide="flame"></i> Hot Lead</span>` 
+          : '';
+
+        // Clean preview to a single tidy line
+        const previewClean = cleanWhatsAppText(chat.last_message).replace(/\n+/g, ' ');
+
+        item.innerHTML = `
+          <div class="avatar ${isTakeover ? 'has-takeover' : ''}" style="${isTelegram ? 'color: #38bdf8; border: 1px solid rgba(56,189,248,0.3);' : ''}">${initials}</div>
+          <div class="chat-item-body">
+            <div class="chat-row-top">
+              <span class="chat-name">${escapeHtml(displayName)}</span>
+              <span class="chat-time">${timeStr}</span>
+            </div>
+            <div class="chat-preview">${escapeHtml(previewClean)}</div>
+            <div class="chat-badges">${channelBadge} ${tagAi} ${tagHot}</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function filterChats() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      const filtered = allChats.filter(c => 
+        (c.whatsapp_name && c.whatsapp_name.toLowerCase().includes(q)) ||
+        c.phone_number.includes(q) ||
+        (c.last_message && c.last_message.toLowerCase().includes(q))
+      );
+      renderChatList(filtered);
+    }
+
+    async function selectChat(phoneNumber) {
+      currentPhone = phoneNumber;
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('active-chat-content').style.display = 'flex';
+      document.getElementById('lead-panel').style.display = 'flex';
+
+      renderChatList(allChats);
+      await loadTranscript();
+    }
+
+    async function loadTranscript() {
+      if (!currentPhone) return;
+      try {
+        const res = await fetch(`/api/admin/chats/${currentPhone}`);
+        const data = await res.json();
+
+        const isTg = currentPhone.startsWith('tg_');
+        const formattedContact = isTg ? `Telegram ID: ${currentPhone.replace('tg_', '')}` : `+${data.user.phone_number}`;
+
+        // Update header & takeover button
+        document.getElementById('active-name').innerText = data.user.whatsapp_name || (isTg ? "Telegram User" : "Client");
+        document.getElementById('active-phone').innerText = formattedContact;
+        document.getElementById('active-avatar').innerText = (data.user.whatsapp_name || (isTg ? "TG" : "CL")).slice(0, 2).toUpperCase();
+
+        isAiPausedCurrent = data.user.is_ai_paused;
+        const toggleBtn = document.getElementById('btn-toggle-takeover');
+        
+        if (isAiPausedCurrent) {
+          toggleBtn.className = "btn-takeover btn-resume";
+          toggleBtn.innerHTML = '<i data-lucide="bot"></i> <span>Resume AI Agent</span>';
+        } else {
+          toggleBtn.className = "btn-takeover";
+          toggleBtn.innerHTML = '<i data-lucide="user"></i> <span>Take Over Chat</span>';
+        }
+
+        // Render clean messages
+        const msgContainer = document.getElementById('messages-container');
+        msgContainer.innerHTML = '';
+
+        data.messages.forEach(m => {
+          const row = document.createElement('div');
+          const isOut = m.sender_type !== 'user';
+          row.className = `msg-bubble-wrap ${isOut ? 'out' : 'in'}`;
+
+          const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          let senderLabel = '';
+          if (m.sender_type === 'ai') senderLabel = `<div class="msg-sender-title"><i data-lucide="bot"></i> AI Concierge (${isTg ? 'Telegram' : 'WhatsApp'})</div>`;
+          else if (m.sender_type === 'human_agent') senderLabel = '<div class="msg-sender-title"><i data-lucide="user-check"></i> Human Agent (You)</div>';
+
+          const contentClean = cleanWhatsAppText(m.content);
+
+          row.innerHTML = `
+            <div class="msg-bubble ${m.sender_type}">
+              ${senderLabel}
+              <div style="white-space: pre-wrap;">${escapeHtml(contentClean)}</div>
+              <div class="msg-time"><span>${time}</span></div>
+            </div>
+          `;
+          msgContainer.appendChild(row);
+        });
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+
+        // Render Right Drawer info
+        document.getElementById('drawer-name').innerText = data.user.whatsapp_name || (isTg ? "Telegram User" : "Client");
+        document.getElementById('drawer-phone').innerText = formattedContact;
+        document.getElementById('drawer-lang').innerText = (data.user.preferred_language || 'english').toUpperCase();
+        document.getElementById('drawer-status').innerText = (data.user.lead_status || 'new').toUpperCase();
+
+        if (data.leads && data.leads.length > 0) {
+          const l = data.leads[0];
+          document.getElementById('drawer-score').innerText = l.intent_score || 'WARM';
+          document.getElementById('drawer-service').innerText = l.service_interested || 'General Inquiry';
+          document.getElementById('drawer-budget').innerText = l.estimated_budget || 'Not specified';
+          document.getElementById('drawer-email').innerText = l.email || 'Not provided';
+        } else {
+          document.getElementById('drawer-score').innerText = '-';
+          document.getElementById('drawer-service').innerText = '-';
+          document.getElementById('drawer-budget').innerText = '-';
+          document.getElementById('drawer-email').innerText = '-';
+        }
+
+        if (data.bookings && data.bookings.length > 0) {
+          const b = data.bookings[0];
+          document.getElementById('drawer-book-service').innerText = b.service_name;
+          document.getElementById('drawer-book-time').innerText = b.preferred_date_time;
+          document.getElementById('drawer-book-status').innerText = b.status.toUpperCase();
+        } else {
+          document.getElementById('drawer-book-service').innerText = '-';
+          document.getElementById('drawer-book-time').innerText = '-';
+          document.getElementById('drawer-book-status').innerText = '-';
+        }
+
+        lucide.createIcons();
+      } catch (e) {
+        console.error("Error loading transcript:", e);
+      }
+    }
+
+    async function toggleTakeover() {
+      if (!currentPhone) return;
+      const nextState = !isAiPausedCurrent;
+      try {
+        await fetch(`/api/admin/chats/${currentPhone}/toggle-ai`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pause_ai: nextState })
+        });
+        await loadTranscript();
+        await loadChats();
+      } catch (e) {
+        alert("Error toggling takeover: " + e);
+      }
+    }
+
+    async function sendManualMessage() {
+      const input = document.getElementById('msg-input');
+      const text = input.value.trim();
+      if (!text || !currentPhone) return;
+
+      input.value = '';
+      try {
+        await fetch(`/api/admin/chats/${currentPhone}/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        await loadTranscript();
+        await loadChats();
+      } catch (e) {
+        alert("Error sending message: " + e);
+      }
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendManualMessage();
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    // Auto-refresh polling every 3 seconds
+    window.onload = () => {
+      lucide.createIcons();
+      loadChats();
+      setInterval(() => {
+        loadChats();
+        if (currentPhone) loadTranscript();
+      }, 3000);
+    };
+  </script>
+</body>
+</html>
