@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: whatsapp-ai-agent
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: OPENAI_MODEL_NAME
+        value: gpt-4o-mini
+      - key: WHATSAPP_API_VERSION
+        value: v22.0
+      - key: MEMORY_HISTORY_LIMIT
+        value: 30
+      - key: VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: PHONE_NUMBER_ID
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: INTERNAL_API_KEY
+        sync: false

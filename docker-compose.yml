@@ -1,0 +1,16 @@
+services:
+  whatsapp-ai-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whatsapp_ai_agent
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PORT=8000
+    volumes:
+      # Persist SQLite db if running without external Postgres
+      - ./data:/app/data
