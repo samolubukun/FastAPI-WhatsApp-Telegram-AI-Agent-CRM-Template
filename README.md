@@ -6,36 +6,9 @@ Features persistent multi-turn conversation memory, autonomous tool use (lead qu
 
 ---
 
-## 📸 Screenshots & Demos
+## Features
 
-### 🖥️ Admin Live Control Hub & CRM Dashboard
-<p align="center">
-  <img src="./screenshots/admin-demo.jpg" alt="Admin CRM Dashboard Live Hub" width="100%">
-</p>
-
-### 📊 Admin Multi-Channel Overview (WhatsApp & Telegram)
-<p align="center">
-  <img src="./screenshots/admin-demo-wa1.jpg" alt="Admin WhatsApp Chat View" width="49%">
-  <img src="./screenshots/admin-demo-tg2.png" alt="Admin Telegram Chat View" width="49%">
-</p>
-
-### 💬 WhatsApp AI Sales & Support Bot
-<p align="center">
-  <img src="./screenshots/wabot1.png" alt="WhatsApp AI Agent Demo 1" width="49%">
-  <img src="./screenshots/wabot2.png" alt="WhatsApp AI Agent Demo 2" width="49%">
-</p>
-
-### ✈️ Telegram AI Sales & Support Bot
-<p align="center">
-  <img src="./screenshots/tgbot1.png" alt="Telegram AI Agent Demo 1" width="49%">
-  <img src="./screenshots/tgbot2.png" alt="Telegram AI Agent Demo 2" width="49%">
-</p>
-
----
-
-## 🌟 Features
-
-- **Omnichannel Support (WhatsApp & Telegram)**: Native asynchronous webhook adapters for both Meta WhatsApp Cloud API and Telegram Bot API.
+- **Dual-Platform Support (WhatsApp & Telegram)**: Native asynchronous webhook adapters for both Meta WhatsApp Cloud API and Telegram Bot API.
 - **Multilingual Intelligence**: Automatically detects and mirrors customer language (English, Pidgin, Yorùbá, Hausa, Igbo, French, Spanish, Arabic, etc.) with language preference storage.
 - **Autonomous Tool Calling**:
   - `save_qualified_lead`: Captures client details, niche, interested services, budget, intent score (`HOT`, `WARM`, `COLD`), and notes.
@@ -43,7 +16,7 @@ Features persistent multi-turn conversation memory, autonomous tool use (lead qu
   - `set_preferred_language`: Persists customer language preferences.
 - **Dynamic Knowledge Base (`knowledge/business_profile.json`)**: Configurable business identity, services, pricing matrices, and FAQs injected dynamically into prompt context.
 - **Real-Time Admin CRM Hub (`/admin`)**:
-  - Live omnichannel inbox with search, channel badges (WhatsApp vs Telegram), and lead status filtering.
+  - Live dual-platform inbox with search, channel badges (WhatsApp vs Telegram), and lead status filtering.
   - Real-time metrics (Total Contacts, Active Leads, Hot Leads, Bookings, Active Takeovers).
   - **Live Human Takeover**: One-click toggle to pause AI replies for specific chats and send manual replies directly to WhatsApp or Telegram.
   - Lead profiles & consultation booking inspector.
@@ -53,7 +26,7 @@ Features persistent multi-turn conversation memory, autonomous tool use (lead qu
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```plaintext
 whatsapp-fastapi-agent/
@@ -70,6 +43,7 @@ whatsapp-fastapi-agent/
 ├── models/                # Pydantic & SQLAlchemy ORM models
 │   ├── db_models.py       # User, ChatMessage, Lead, ServiceBooking tables
 │   └── whatsapp.py        # Webhook payload & outbound message models
+├── screenshots/           # UI and bot conversation demonstration images
 ├── services/              # Business logic layer
 │   ├── agent_tools.py     # OpenAI tool definitions & execution handlers
 │   ├── knowledge_service.py # Dynamic business profile loader & FAQ search
@@ -92,12 +66,40 @@ whatsapp-fastapi-agent/
 
 ---
 
-## 🚀 Quick Start
+## Screenshots & Demos
+
+### Admin Live Control Hub & CRM Dashboard
+<p align="center">
+  <img src="./screenshots/admin-demo.jpg" alt="Admin CRM Dashboard Live Hub" width="100%">
+</p>
+
+### Admin Multi-Channel Overview (WhatsApp & Telegram)
+<p align="center">
+  <img src="./screenshots/admin-demo-wa1.jpg" alt="Admin WhatsApp Chat View" width="49%">
+  <img src="./screenshots/admin-demo-tg2.png" alt="Admin Telegram Chat View" width="49%">
+</p>
+
+### WhatsApp AI Sales & Support Bot
+<p align="center">
+  <img src="./screenshots/wabot1.png" alt="WhatsApp AI Agent Demo 1" width="49%">
+  <img src="./screenshots/wabot2.png" alt="WhatsApp AI Agent Demo 2" width="49%">
+</p>
+
+### Telegram AI Sales & Support Bot
+<p align="center">
+  <img src="./screenshots/tgbot1.png" alt="Telegram AI Agent Demo 1" width="49%">
+  <img src="./screenshots/tgbot2.png" alt="Telegram AI Agent Demo 2" width="49%">
+</p>
+
+---
+
+## Quick Start
 
 ### 1. Prerequisites
 
 - Python 3.10+
 - Meta Business Account & Developer App with WhatsApp Cloud API enabled
+- Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
 - OpenAI API Key
 
 ### 2. Installation
@@ -135,13 +137,13 @@ WHATSAPP_TOKEN="your_permanent_whatsapp_system_user_token"
 PHONE_NUMBER_ID="your_whatsapp_phone_number_id"
 WHATSAPP_API_VERSION="v22.0"
 
-# Database (SQLite default or PostgreSQL)
-DATABASE_URL="sqlite+aiosqlite:///./whatsapp_agent.db"
-# Postgres: "postgresql+asyncpg://user:password@host/dbname?sslmode=require"
-
 # Telegram Bot Credentials
 TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
 TELEGRAM_WEBHOOK_SECRET="your_telegram_webhook_secret"
+
+# Database (SQLite default or PostgreSQL)
+DATABASE_URL="sqlite+aiosqlite:///./whatsapp_agent.db"
+# Postgres: "postgresql+asyncpg://user:password@host/dbname?sslmode=require"
 
 # OpenAI
 OPENAI_API_KEY="sk-..."
@@ -152,7 +154,7 @@ MEMORY_HISTORY_LIMIT=30
 INTERNAL_API_KEY="your_secure_internal_api_key"
 ```
 
-> 💡 For detailed instructions on generating tokens (Meta Permanent Token, Secret Keys), configuring Cloudflare tunnels, or connecting n8n, see [SETUP_GUIDE.md](./SETUP_GUIDE.md).
+> For detailed instructions on generating tokens (Meta Permanent Token, Secret Keys), configuring Cloudflare/localtunnel, or connecting n8n, see [SETUP_GUIDE.md](./SETUP_GUIDE.md).
 
 ### 4. Run Locally
 
@@ -166,7 +168,7 @@ uvicorn main:app --reload --port 8000
 
 ---
 
-## 🧪 Local Webhook Testing
+## Local Webhook Testing
 
 You can simulate WhatsApp webhook messages locally without Meta:
 
@@ -196,7 +198,7 @@ You can simulate WhatsApp webhook messages locally without Meta:
                 "from": "1234567890",
                 "id": "wamid.test_message_123",
                 "timestamp": "1701108242",
-                "text": { "body": "Hi, I would like to book a consultation for web development." },
+                "text": { "body": "Hi, I would like to book a consultation for cargo freight." },
                 "type": "text"
               }
             ]
@@ -218,7 +220,7 @@ Invoke-WebRequest -Uri http://127.0.0.1:8000/whatsapp/webhook -Method POST -Head
 
 ---
 
-## 🤖 Knowledge Base Customization
+## Knowledge Base Customization
 
 To customize business identity, offerings, pricing, and responses:
 1. Open [`knowledge/business_profile.json`](./knowledge/business_profile.json).
@@ -227,11 +229,12 @@ To customize business identity, offerings, pricing, and responses:
 
 ---
 
-## 🔌 Outbound API (n8n / External Triggers)
+## Outbound API (n8n / External Triggers)
 
 Trigger proactive outbound messages:
 
-- **Endpoint**: `POST /whatsapp/send`
+- **WhatsApp**: `POST /whatsapp/send`
+- **Telegram**: `POST /telegram/send`
 - **Header**: `x-api-key: <INTERNAL_API_KEY>`
 - **Payload**:
 ```json
@@ -243,12 +246,12 @@ Trigger proactive outbound messages:
 
 ---
 
-## 🚢 Deployment
+## Deployment
 
 ### Docker
 ```bash
-docker build -t whatsapp-fastapi-agent .
-docker run -p 8000:8000 --env-file .env whatsapp-fastapi-agent
+docker build -t fastapi-ai-agent .
+docker run -p 8000:8000 --env-file .env fastapi-ai-agent
 ```
 
 ### Railway
@@ -259,6 +262,6 @@ Deploy via Blueprint using the included [`render.yaml`](./render.yaml).
 
 ---
 
-## 📄 License
+## License
 
 MIT License. Free for personal and commercial use.
