@@ -1,0 +1,95 @@
+{
+  "business_name": "Prestige Prime Logistics & Concierge",
+  "tagline": "Premium Global Freight Forwarding, VIP Auto Imports, Express Haulage, and Luxury Warehousing.",
+  "location": "Lagos, Abuja, Port Harcourt & Global Delivery",
+  "contact": {
+    "email": "shipments@prestigeprimelogistics.com",
+    "phone": "+2348083273795",
+    "website": "https://prestigeprimelogistics.com"
+  },
+  "supported_languages": {
+    "english": "English",
+    "yoruba": "Yorùbá",
+    "hausa": "Hausa",
+    "igbo": "Igbo",
+    "pidgin": "Nigerian Pidgin"
+  },
+  "welcome_greetings": {
+    "english": "Welcome to Prestige Prime Logistics & Concierge! We handle international air/sea freight forwarding, luxury vehicle imports, express domestic haulage, and custom clearing.\n\nHow can we assist your shipment or cargo today? (We also speak Yorùbá, Hausa, Igbo, and Pidgin if you prefer!)",
+    "yoruba": "Ẹ káàbọ̀ sí Prestige Prime Logistics & Concierge! A ń bójú tó gbogbo iṣẹ́ ẹrù kíkó láti òkè-òkun (Air & Sea Freight), ọkọ̀ wíwọlé, àti kíkó ẹrù káàkiri orílẹ̀-èdè.\n\nBáwo ni a ṣe lè ran ìfiranṣẹ́ tàbí ẹrù yín lọ́wọ́ lónìí?",
+    "hausa": "Barka da zuwa Prestige Prime Logistics & Concierge! Muna kula da jigilar kaya ta sama da ruwa daga kasashen waje, shigo da motoci, da kai kayayyaki cikin gida cikin sauri.\n\nTa yaya za mu iya taimaka muku game da kayan ku yau?",
+    "igbo": "Nnọọ na Prestige Prime Logistics & Concierge! Anyị na-ebu ngwaahịa site na ikuku na mmiri si mba ofesi, mbubata ụgbọ ala, na ibuga ngwaahịa ngwa ngwa.\n\nKedu ka anyị ga-esi nyere gị aka na mbupu gị taa?",
+    "pidgin": "Welcome to Prestige Prime Logistics & Concierge! We dey handle air and sea shipping from abroad (USA, UK, China), car clearing, and fast nationwide delivery.\n\nWetin you wan make we ship or clear for you today?"
+  },
+  "services": [
+    {
+      "id": "intl_freight_forwarding",
+      "name": "International Air & Sea Cargo Freight (USA, UK, China, Dubai to Nigeria)",
+      "price_range": "Air Cargo: $4.50 - $7.50 / kg (3-5 Days) | Sea Freight: $180 - $260 / CBM (4-6 Weeks)",
+      "timeline": "Express Air: 3-5 Working Days | Ocean Cargo: 30-45 Days",
+      "deliverables": [
+        "Door-to-door cargo pickup and doorstep delivery in Nigeria",
+        "Free consolidated packaging and inspection",
+        "Customs duty payment and guaranteed clearing with zero demurrage",
+        "Live real-time cargo GPS tracking updates on WhatsApp"
+      ],
+      "best_for": "Importers, merchants, e-commerce stores, and individuals shipping goods from China, USA, UK, or Dubai."
+    },
+    {
+      "id": "luxury_vehicle_clearing",
+      "name": "VIP Vehicle Sourcing & Express Port Customs Clearing",
+      "price_range": "₦650,000 – ₦2,200,000 per vehicle (depending on make, model & year)",
+      "timeline": "Fast-Track 48 to 72 Hours Customs Clearance at Tincan / Apapa Ports",
+      "deliverables": [
+        "100% Genuine original VIN assessment and duty documentation",
+        "Zero-delay port exit and escorted interstate flatbed delivery",
+        "Pre-shipping condition verification and physical inspection report",
+        "Comprehensive transit insurance cover"
+      ],
+      "best_for": "Car dealerships, corporate fleets, and private individuals importing luxury cars, SUVs, and trucks."
+    },
+    {
+      "id": "nationwide_express_haulage",
+      "name": "Interstate Commercial Haulage & Secure Fleet Logistics",
+      "price_range": "₦250,000 – ₦1,400,000 per trip (10 Ton to 30 Ton capacity)",
+      "timeline": "24 to 48 Hours Nationwide Delivery",
+      "deliverables": [
+        "Modern heavy-duty trucks (box trucks, flatbeds, and refrigerated trailers)",
+        "Armed security escort options for high-value goods",
+        "Goods-in-transit insurance coverage up to ₦100,000,000",
+        "Dedicated logistics officer and instant proof of delivery"
+      ],
+      "best_for": "FMCG manufacturers, agro-exporters, distributors, and construction firms needing reliable bulk transport."
+    },
+    {
+      "id": "vip_procurement_assistant",
+      "name": "Global Sourcing & Supplier Escrow Concierge (Add-on)",
+      "price_range": "5% – 8% commission on total order value",
+      "timeline": "Instant Supplier Verification within 24 Hours",
+      "deliverables": [
+        "Direct manufacturer factory price negotiation in Guangzhou, Yiwu, and Shenzhen",
+        "RMB (Yuan), USD, and GBP supplier payment without FX bank limits",
+        "Quality assurance video and factory sample verification before final payment"
+      ],
+      "best_for": "Businesses looking for a trusted agent to buy directly from verified overseas suppliers without being scammed."
+    }
+  ],
+  "faq": [
+    {
+      "question": "How do I calculate shipping cost for my package?",
+      "answer": "Air cargo is calculated by gross weight (or volumetric weight if bulky). Sea freight is charged per Cubic Meter (CBM). Tell us your cargo description, origin country, and approximate weight, and we will calculate your exact landing quote instantly."
+    },
+    {
+      "question": "Where are your international warehouse pickup addresses?",
+      "answer": "We have fully staffed collection hubs in Guangzhou & Yiwu (China), Houston & New York (USA), London Heathrow (UK), and Deira (Dubai). Once you register, we assign you a unique private suite ID for your shipments."
+    },
+    {
+      "question": "How long does custom clearance take at Lagos ports?",
+      "answer": "With our pre-arrival documentation service, standard air cargo clears in 24 hours, and ocean containers or vehicles clear in 48 to 72 hours."
+    },
+    {
+      "question": "Are my goods insured during shipping?",
+      "answer": "Yes! All shipments are covered by our standard carrier transit policy, with full 100% comprehensive marine insurance available for high-value luxury cargo and vehicles."
+    }
+  ]
+}
